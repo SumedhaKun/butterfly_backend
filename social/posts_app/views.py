@@ -3,8 +3,9 @@ from django.shortcuts import render
 from rest_framework.views import APIView  
 # Create your views here.
 from .models import Post
+from .models import Comment
 from django.contrib.auth.models import User
-from .serializers import PostSerializer, UserSerializer
+from .serializers import PostSerializer, UserSerializer, CommentSerializer
 from rest_framework import generics
 import rest_framework.permissions
 from django.contrib.auth.hashers import make_password
@@ -13,8 +14,6 @@ from rest_framework import status
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import authenticate, login, logout
 from rest_framework.decorators import api_view
-from rest_framework.authtoken.models import Token
-
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from django.views.decorators.csrf import ensure_csrf_cookie
@@ -107,4 +106,49 @@ class PostDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
     permission_classes = [rest_framework.permissions.IsAuthenticated]
+
+@api_view(['GET'])
+def get_comments_by_post(request,pk):
+    post=Post.objects.get(pk=pk)
+    comments=Comment.objects.filter(post=post)
+    serializer = CommentSerializer(comments, many=True)
+    print(comments)
+    return JsonResponse(serializer.data, safe=False,status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+def create_comment(request):
+    content=request.data["content"]
+    date=request.data["date"]
+    pk=request.data["pk"]
+    post=Post.objects.get(pk=pk)
+    comment=Comment.objects.create(content=content,date=date, post=post,user=request.user)
+    comment.save()
+    return Response(status=status.HTTP_201_CREATED)
+
+@api_view(['PATCH'])
+def update_comment_likes(request,pk):
+    comment=Comment.objects.get(pk=pk)
+    print(comment.likes)
+    comment.likes+=1
+    print(comment.likes)
+    comment.save()
+    return Response(status=status.HTTP_200_OK)
+
+@api_view(['PATCH'])
+def update_post_likes(request,pk):
+    post=Post.objects.get(pk=pk)
+    post.likes+=1
+    post.save()
+    return Response(status=status.HTTP_200_OK)
+
+
+class CommentListView(generics.ListAPIView):
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+
+
+
+
+
+
     
