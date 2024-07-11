@@ -23,16 +23,42 @@ from rest_framework_simplejwt.tokens import AccessToken
 @permission_classes([AllowAny])
 def create_user(request):
     if request.method == 'POST':
+        headers={"Access-Control-Allow-Origin":"http://127.0.0.1:3000"}
         print(request.data)
         username=request.data["username"]
         email = request.data["email"]
         password = request.data["password"]
         user = User.objects.create_user(username=username, email=email, password=password)
         user.save()
-        return Response({'message': 'User registered successfully'}, status=status.HTTP_201_CREATED)
+        return Response({'message': 'User registered successfully'}, status=status.HTTP_201_CREATED,headers=headers)
     else:
-        return Response({'message': 'User registered successfully'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+        return Response({'message': 'User registered successfully'}, status=status.HTTP_405_METHOD_NOT_ALLOWED,headers=headers)
 
+@api_view(['PATCH'])
+def follow_user(request,pk):
+    user_to_follow=User.objects.get(pk=pk)
+    request.user.profile.following.add(user_to_follow)
+    user_to_follow.profile.followers.add(request.user)
+    return Response(status=status.HTTP_200_OK)
+
+@api_view(['PATCH'])
+def unfollow_user(request,pk):
+    user_to_unfollow=User.objects.get(pk=pk)
+    request.user.profile.following.remove(user_to_unfollow)
+    user_to_unfollow.profile.followers.remove(request.user)
+    return Response(status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+def get_followers(request):
+    followers=request.user.profile.followers
+    serializer = UserSerializer(followers, many=True)
+    return Response(serializer.data)
+
+@api_view(['GET'])
+def get_following(request):
+    following=request.user.profile.following
+    serializer = UserSerializer(following, many=True)
+    return Response(serializer.data)
 
 
 @permission_classes([AllowAny])
@@ -47,10 +73,17 @@ class UserListView(APIView):
 def get_user_by_key(request,pk):
     try:
         user = User.objects.get(pk=pk)
-        print(user)
+        followers=user.profile.followers
+        followers = UserSerializer(followers, many=True)
+
+        following=user.profile.following
+        following = UserSerializer(following, many=True)
+
         data = {
             'username': user.username,
             'email': user.email,
+            'followers': followers.data,
+            'following':following.data
         }
         return Response(data,status=status.HTTP_200_OK)
     except User.DoesNotExist:
@@ -108,11 +141,17 @@ class PostDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [rest_framework.permissions.IsAuthenticated]
 
 @api_view(['GET'])
+def get_posts_by_user(request,pk):
+    user=User.objects.get(pk=pk)
+    posts=Post.objects.filter(user=user)
+    serializer = PostSerializer(posts, many=True)
+    return JsonResponse(serializer.data, safe=False,status=status.HTTP_200_OK)
+
+@api_view(['GET'])
 def get_comments_by_post(request,pk):
     post=Post.objects.get(pk=pk)
     comments=Comment.objects.filter(post=post)
     serializer = CommentSerializer(comments, many=True)
-    print(comments)
     return JsonResponse(serializer.data, safe=False,status=status.HTTP_200_OK)
 
 @api_view(['POST'])
@@ -146,7 +185,12 @@ class CommentListView(generics.ListAPIView):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
 
-
+@api_view(['DELETE'])
+@permission_classes([AllowAny])
+def delete_user(request,pk):
+    user=User.objects.get(pk=pk)
+    user.delete()
+    return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 
