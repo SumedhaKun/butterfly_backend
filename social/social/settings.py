@@ -40,7 +40,7 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['7dbd-2600-1700-78ee-290-fdc8-4c26-ae36-f4ba.ngrok-free.app']
+ALLOWED_HOSTS = ['7dbd-2600-1700-78ee-290-fdc8-4c26-ae36-f4ba.ngrok-free.app','https://butterfly-backend.onrender.com']
 # SESSION_COOKIE_DOMAIN = None
 # SESSION_COOKIE_PATH = '/'
 
