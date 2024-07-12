@@ -18,6 +18,14 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from django.views.decorators.csrf import ensure_csrf_cookie
 from rest_framework_simplejwt.tokens import AccessToken
+from PIL import Image
+from io import BytesIO
+from django.core.files.uploadedfile import InMemoryUploadedFile
+import boto3
+from botocore.exceptions import ClientError
+from django.conf import settings
+
+
 @csrf_exempt 
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -128,12 +136,39 @@ def logout_view(request):
     logout(request)
     return Response(status=status.HTTP_200_OK)
 
+def save_image(image):
+    aws_access_key_id = getattr(settings, 'AWS_ACCESS_KEY_ID', None)
+    aws_secret_access_key = getattr(settings, 'AWS_SECRET_ACCESS_KEY', None)
+    aws_storage_bucket_name = getattr(settings, 'AWS_STORAGE_BUCKET_NAME', None)
+    img = Image.open(image)
+    img.thumbnail((300, 300))
+    buffer = BytesIO()
+    img.save(buffer, format='JPEG')
+    buffer.seek(0)
+    image_file = InMemoryUploadedFile(
+        buffer, None, 'example.jpg', 'image/jpeg', buffer.getbuffer().nbytes, None
+    )
+    s3_client = boto3.client('s3',
+        aws_access_key_id=aws_access_key_id,
+        aws_secret_access_key=aws_secret_access_key
+    )
+    try:
+        s3_client.upload_fileobj(image_file, aws_storage_bucket_name, 'images/example.jpg')
+    except ClientError as e:
+        print(e)
+        return None
+
+    return image_file.url
+
 class PostListView(generics.ListCreateAPIView):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
     permission_classes = [rest_framework.permissions.IsAuthenticated]
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+    def create(self, request, *args, **kwargs):
+        print(request.FILES) 
+        return super().create(request, *args, **kwargs)
 
 class PostDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Post.objects.all()
@@ -184,6 +219,14 @@ def update_post_likes(request,pk):
 class CommentListView(generics.ListAPIView):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
+
+@api_view(['PATCH'])
+def update_caption(request,pk):
+    post=Post.objects.get(pk=pk)
+    post.caption=request.data["caption"]
+    post.save()
+    return Response(status=status.HTTP_200_OK)
+    
 
 @api_view(['DELETE'])
 @permission_classes([AllowAny])

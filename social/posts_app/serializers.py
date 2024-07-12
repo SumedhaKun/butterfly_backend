@@ -8,7 +8,7 @@ from .models import Comment
 class PostSerializer(serializers.ModelSerializer):
     class Meta:
         model=Post
-        fields=['pk','title','data','likes','date','user']
+        fields=['pk','title','data','image','likes','date','user','caption']
         read_only_fields=['user']
 
 class UserSerializer(serializers.ModelSerializer):

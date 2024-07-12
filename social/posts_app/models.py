@@ -17,9 +17,11 @@ def create_or_update_user_profile(sender, instance, created, **kwargs):
 class Post(models.Model):
     title=models.CharField(max_length=200)
     data=models.TextField()
+    image = models.ImageField(upload_to='images/', null=True, blank=True)
     likes=models.IntegerField(default=0)
     date=models.DateField()
     user=models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    caption=models.TextField(default="Loading...")
 
     def __str__(self):
         return self.title
