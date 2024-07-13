@@ -82,17 +82,17 @@ class UserListView(APIView):
 def get_user_by_key(request,pk):
     try:
         user = User.objects.get(pk=pk)
-        followers=user.profile.followers
-        followers = UserSerializer(followers, many=True)
+        # followers=user.profile.followers
+        # followers = UserSerializer(followers, many=True)
 
-        following=user.profile.following
-        following = UserSerializer(following, many=True)
+        # following=user.profile.following
+        # following = UserSerializer(following, many=True)
 
         data = {
             'username': user.username,
             'email': user.email,
-            'followers': followers.data,
-            'following':following.data
+            # 'followers': followers.data,
+            # 'following':following.data
         }
         return Response(data,status=status.HTTP_200_OK)
     except User.DoesNotExist:
