@@ -34,8 +34,8 @@ def create_user(request):
         headers={"Access-Control-Allow-Origin":"https://butterfly-frontend.onrender.com"}
         print(request.data)
         username=request.data["username"]
-        if User.objects.get(username=username):
-            return Response({'error':'user with this name already exists'},status=400)
+        # if User.objects.get(username=username):
+        #     return Response({'error':'user with this name already exists'},status=400)
         email = request.data["email"]
         password = request.data["password"]
         print(username, email, password)
