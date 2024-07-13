@@ -26,6 +26,8 @@ urlpatterns = [
     path('api/follow/<int:pk>/', views.follow_user, name='follow'),
     path('api/unfollow/<int:pk>/', views.unfollow_user, name='unfollow'),
     path('api/delete/user/<int:pk>', views.delete_user, name='delete_user'),
-    path('api/caption/<int:pk>/', views.update_caption, name='caption'),
+    path('api/delete/post/<int:pk>', views.delete_post, name='delete_post'),
+    path('api/delete/comment/<int:pk>', views.delete_comment, name='delete_comment'),
+    path('api/caption/<int:pk>/', views.update_caption, name='caption'), 
 
 ]

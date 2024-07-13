@@ -40,7 +40,7 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['butterfly-backend.onrender.com']
+ALLOWED_HOSTS = ['butterfly-backend.onrender.com','127.0.0.1']
 # SESSION_COOKIE_DOMAIN = None
 # SESSION_COOKIE_PATH = '/'
 
@@ -53,7 +53,7 @@ CORS_ALLOW_ALL_ORIGINS=False
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
     'http://127.0.0.1:3000',
-    'https://butterfly-frontend.onrender.com'
+    'https://butterfly-frontend.onrender.com',
 ]
 CORS_ALLOW_HEADERS = ['accept', 'accept-encoding', 'authorization', 'content-type', 'dnt', 'origin', 'user-agent', 'x-csrftoken', 'x-requested-with',"ngrok-skip-browser-warning"]
 CORS_ALLOW_CREDENTIALS = True

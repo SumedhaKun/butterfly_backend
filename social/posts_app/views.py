@@ -34,13 +34,14 @@ def create_user(request):
         headers={"Access-Control-Allow-Origin":"http://127.0.0.1:3000"}
         print(request.data)
         username=request.data["username"]
+        if User.objects.get(username=username):
+            return Response({'error':'user with this name already exists'},status=400)
         email = request.data["email"]
         password = request.data["password"]
+        # user exists
         user = User.objects.create_user(username=username, email=email, password=password)
         user.save()
         return Response({'message': 'User registered successfully'}, status=status.HTTP_201_CREATED,headers=headers)
-    else:
-        return Response({'message': 'User registered successfully'}, status=status.HTTP_405_METHOD_NOT_ALLOWED,headers=headers)
 
 @api_view(['PATCH'])
 def follow_user(request,pk):
@@ -103,8 +104,6 @@ def get_user_by_key(request,pk):
 @api_view(['GET'])
 def get_authenticated_user(request):
     user = request.user
-    if user:
-        print(user.get_username())
     headers={"Access-Control-Allow-Origin":"http://127.0.0.1:3000", "Access-Control-Allow-Credentials": "true",}
     if user.is_authenticated:
         data = {
@@ -129,7 +128,7 @@ def login_user(request):
             return Response({'token': str(access_token)},status=status.HTTP_200_OK)
             
         else:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+            return Response("username or password is incorrect", status=status.HTTP_400_BAD_REQUEST)
                
 @api_view(['POST'])
 def logout_view(request):
@@ -202,9 +201,7 @@ def create_comment(request):
 @api_view(['PATCH'])
 def update_comment_likes(request,pk):
     comment=Comment.objects.get(pk=pk)
-    print(comment.likes)
     comment.likes+=1
-    print(comment.likes)
     comment.save()
     return Response(status=status.HTTP_200_OK)
 
@@ -234,6 +231,22 @@ def delete_user(request,pk):
     user=User.objects.get(pk=pk)
     user.delete()
     return Response(status=status.HTTP_204_NO_CONTENT)
+
+@api_view(['DELETE'])
+@permission_classes([AllowAny])
+def delete_post(request,pk):
+    post=Post.objects.get(pk=pk)
+    post.delete()
+    return Response(status=status.HTTP_204_NO_CONTENT)
+
+@api_view(['DELETE'])
+@permission_classes([AllowAny])
+def delete_comment(request,pk):
+    comment=Comment.objects.get(pk=pk)
+    comment.delete()
+    return Response(status=status.HTTP_204_NO_CONTENT)
+
+
 
 
 
