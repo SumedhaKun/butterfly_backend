@@ -32,16 +32,10 @@ from django.conf import settings
 def create_user(request):
     if request.method == 'POST':
         headers={"Access-Control-Allow-Origin":"https://butterfly-frontend.onrender.com"}
-        print(request.data)
         username=request.data["username"]
-        # if User.objects.get(username=username):
-        #     return Response({'error':'user with this name already exists'},status=400)
         email = request.data["email"]
         password = request.data["password"]
-        print(username, email, password)
-        # user exists
         user = User.objects.create_user(username=username, email=email, password=password)
-        print("registered user: "+user)
         user.save()
         return Response({'message': 'User registered successfully'}, status=status.HTTP_201_CREATED,headers=headers)
 
@@ -84,16 +78,16 @@ class UserListView(APIView):
 def get_user_by_key(request,pk):
     try:
         user = User.objects.get(pk=pk)
-        # followers=user.profile.followers
-        # followers = UserSerializer(followers, many=True)
+        followers=user.profile.followers
+        followers = UserSerializer(followers, many=True)
 
-        # following=user.profile.following
-        # following = UserSerializer(following, many=True)
+        following=user.profile.following
+        following = UserSerializer(following, many=True)
         data = {
             'username': user.username,
             'email': user.email,
-            # 'followers': followers.data,
-            # 'following':following.data
+            'followers': followers.data,
+            'following':following.data
         }
         return Response(data,status=status.HTTP_200_OK)
     except User.DoesNotExist:
